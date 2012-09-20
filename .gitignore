@@ -1,0 +1,6 @@
+*.pyc
+*~
+.coverage
+coverage/
+doc/coverage/
+doc/_build/

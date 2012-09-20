@@ -64,7 +64,7 @@ coordinates are observed or required. Both are in units of years.
 
 '''
 
-from numpy import array, dot
+from numpy import array, dot, pi
 
 
 class ParameterSet(object):
@@ -89,7 +89,7 @@ class ParameterSet(object):
     **Examples**
 
     >>> ParameterSet((0.01, 0.02, 0.03), 3.14e-9, [-0.1, -0.2, -0.3])
-    ParameterSet(translate_m = array([ 0.01,  0.02,  0.03]), term_d = 3.14e-09, rotate_rad = array([-0.1, -0.2, -0.3]))
+    ParameterSet(translate_m = array([ 0.01,  0.02,  0.03]), term_d = 3.1400e-09, rotate_rad = array([-0.1, -0.2, -0.3]))
     >>> ParameterSet((0.01, 0.02), 3.14e-9, [-0.1, -0.2, -0.3])
     Traceback (most recent call last):
     ...
@@ -106,6 +106,28 @@ class ParameterSet(object):
     Traceback (most recent call last):
     ...
     ValueError: rotate_rad((15.0, 14, 13, 12)) must be e sequence of 3 floats.
+
+
+    ``ParameterSet`` also supports multiplication by a number and addition
+    of two ``ParameterSet`` s
+
+    >>> mm  = 0.001
+    >>> mas = pi/(180.0*3600.0*1000.0)
+    >>> parameters = ParameterSet(array([52.1, 49.3, -58.5])*mm,
+    ...                           1.34e-9, 
+    ...                           array([0.891, 5.390, -8.712])*mas)
+    >>> parameters
+    ParameterSet(translate_m = array([ 0.0521,  0.0493, -0.0585]), term_d = 1.3400e-09, rotate_rad = array([  4.31968990e-09,   2.61314574e-08,  -4.22369679e-08]))
+    >>> rates      = ParameterSet(array([0.1, 0.1, -1.8])*mm,
+    ...                           0.08e-9, 
+    ...                           array([0.081, 0.490, -0.792])*mas)
+    >>> rates
+    ParameterSet(translate_m = array([ 0.0001,  0.0001, -0.0018]), term_d = 8.0000e-11, rotate_rad = array([  3.92699082e-10,   2.37558704e-09,  -3.83972435e-09]))
+    >>> ref_epoch = 2000.0
+    >>> parameters + rates*(2010.0 - ref_epoch)
+    ParameterSet(translate_m = array([ 0.0531,  0.0503, -0.0765]), term_d = 2.1400e-09, rotate_rad = array([  8.24668072e-09,   4.98873278e-08,  -8.06342114e-08]))
+    
+
 
     '''
     def __init__(self, translate_m, term_d, rotate_rad):
@@ -125,7 +147,7 @@ class ParameterSet(object):
 
 
     def __repr__(self):
-        return ('ParameterSet(translate_m = %r, term_d = %r, rotate_rad = %r)' %
+        return ('ParameterSet(translate_m = %r, term_d = %.4e, rotate_rad = %r)' %
                 (self.translate_m, self.term_d, self.rotate_rad))
 
 
@@ -157,17 +179,111 @@ class ParameterSet(object):
                       [-r_2       , r_1        , self.term_d]])
 
 
+    def __mul__(self, number):
+        return ParameterSet(translate_m = self.translate_m * number,
+                            term_d      = self.term_d      * number,
+                            rotate_rad  = self.rotate_rad  * number)
+
+    def __add__(self, parameter_set):
+        other = parameter_set
+        return ParameterSet(translate_m = self.translate_m + other.translate_m,
+                            term_d      = self.term_d      + other.term_d,
+                            rotate_rad  = self.rotate_rad  + other.rotate_rad)
+        
 
 
-class CoordinateTransform(object):
-    def __init__(self, from_frame, to_frame, parameters, rates, epoch):
+
+class DatumTransformation(object):
+    r'''
+    A datum transformation is used to transform coordinates from
+    reference frame A to reference frame B. It is defined by a frame
+    *from* which to transform, a frame *to* which to transform, the
+    transformation parameters at the reference epoch, and their rates
+    of change.
+
+    **Parameters**
+    
+    from_frame : string
+        The reference frame *from* which the parameters transform, for
+        example 'ITRF2008'
+
+    to_frame : string
+        The reference frame *to* which the parameters transform, for
+        example 'ETRF2000'
+
+    parameters : ParameterSet
+        The values of the transform parameters :math:`Tn`, :math:`D`,
+        and :math:`Rn`.
+
+    rates : ParameterSet
+        The annual rates of change for the parameters :math:`Tn`,
+        :math:`D`, and :math:`Rn`.
+        
+    ref_epoch : float
+        The year to which the parameters are referenced. The
+        parameters at ``epoch`` are ``parameters`` + ``rates`` *
+        (epoch - ref_epoch)
+
+    **Examples**
+
+    >>> mm  = 0.001
+    >>> mas = pi/(180.0*3600.0*1000.0)
+    >>> DatumTransformation(
+    ...     from_frame = 'ITRF2008', to_frame = 'ETRF2000',
+    ...     parameters = ParameterSet(array([52.1, 49.3, -58.5])*mm,
+    ...                               1.34e-9, 
+    ...                               array([0.891, 5.390, -8.712])*mas),
+    ...     rates      = ParameterSet(array([0.1, 0.1, -1.8])*mm,
+    ...                               0.08e-9, 
+    ...                               array([0.081, 0.490, -0.792])*mas),
+    ...     ref_epoch  = 2000.0)
+    DatumTransformation(from_frame = 'ITRF2008', to_frame = 'ETRF2000',
+            parameters = ParameterSet(translate_m = array([ 0.0521,  0.0493, -0.0585]), term_d = 1.3400e-09, rotate_rad = array([  4.31968990e-09,   2.61314574e-08,  -4.22369679e-08])),
+            rates      = ParameterSet(translate_m = array([ 0.0001,  0.0001, -0.0018]), term_d = 8.0000e-11, rotate_rad = array([  3.92699082e-10,   2.37558704e-09,  -3.83972435e-09])),
+            ref_epoch  = 2000.0)
+    '''
+    def __init__(self, from_frame, to_frame, parameters, rates, ref_epoch):
+        self.from_frame = from_frame
+        self.to_frame   = to_frame
+        self.parameters = parameters
+        self.rates      = rates
+        self.ref_epoch  = ref_epoch
+
+
+    def __repr__(self):
+        return ('''%s(from_frame = %r, to_frame = %r,
+        parameters = %r,
+        rates      = %r,
+        ref_epoch  = %r)''' %
+                (type(self).__name__, self.from_frame, self.to_frame,
+                 self.parameters, self.rates, self.ref_epoch))
+
+
+    def forward_transform(self, epoch, xyz):
+        r'''
+        '''
         pass
 
-    def __repr__():
-        return 'CoordinateTransform'
+
+    def reverse_transform(self, epoch, xyz):
+        r'''
+        '''
+        pass
 
 
-class ETRF2000(CoordinateTransform):
+    def convert_fn(self, from_frame, to_frame, epoch):
+        r'''
+        **Returns**
+        
+        A function that converts an XYZ vector from ``from_frame`` to
+        ``to_frame``. If ``from_frame`` is equal to ``self.to_frame``
+        and v.v., the function performs the inverse transform.
+        '''
+        pass
+
+
+
+class ETRF2000(DatumTransformation):
     def __init__(self, from_frame, parameters, rates, epoch):
         self.to_frame   = 'ETRF2000'
         self.from_frame = from_frame
@@ -176,7 +292,8 @@ class ETRF2000(CoordinateTransform):
 
 
 # Coefficients from Boucher and Altamimi (2011)
-# "Memo: specifications for reference frame fixing in the analysis of a EUREF GPS campaign"
+# "Memo: specifications for reference frame fixing in the analysis of
+# a EUREF GPS campaign"
 #                          |'T1' |'T2' |'T3'  |'D'  |'R1'  |'R2'  |'R3'   |
 #                          |(mm) |(mm) |(mm)  |x1e-9|(mas) |(mas) |(mas)  |
 PARAMETER_TABLE = [        
