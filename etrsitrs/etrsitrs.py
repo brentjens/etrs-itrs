@@ -388,21 +388,29 @@ class DatumTransformation(object):
     Let's see how this works out:
 
     >>> onsala_itrf2008 = array([3370658.542, 711877.138, 5349786.952])
-    >>> onsala_etrf2000 = forward_transform(onsala_itrf2008,
-    ...                                     par_2005.translate_m,
-    ...                                     par_2005.matrix())
+    >>> itrf_to_etrf = transform.convert_fn('ITRF2008', 'ETRF2000', epoch = 2005.0)
+    >>> onsala_etrf2000 = itrf_to_etrf(onsala_itrf2008)
     >>> print('%.3f, %.3f, %.3f' % tuple(onsala_etrf2000))
     3370658.848, 711876.948, 5349786.770
 
     Not bad at all. We also have the reverse transform, from ETRF2000 to ITRF2008:
 
     >>> onsala_etrf2000 = array([3370658.848, 711876.948, 5349786.770])
-    >>> onsala_itrf2008 = reverse_transform(onsala_etrf2000,
-    ...                                     par_2005.translate_m,
-    ...                                     par_2005.matrix())
+    >>> etrf_to_itrf = transform.convert_fn('ETRF2000', 'ITRF2008', epoch = 2005.0)
+    >>> onsala_itrf2008 = etrf_to_itrf(onsala_etrf2000)
     >>> print('%.3f, %.3f, %.3f' % tuple(onsala_itrf2008))
     3370658.542, 711877.138, 5349786.952
     
+    For single use, one can call the *convert* method, which under the
+    hood first creates a conversion function. Note that this is fairly
+    wasteful in terms of cpu cycles:
+
+    >>> print('%.3f, %.3f, %.3f' %
+    ...       tuple(transform.convert(onsala_itrf2008, 'ITRF2008', 'ETRF2000', 2005.0)))
+    3370658.848, 711876.948, 5349786.770
+    >>> print('%.3f, %.3f, %.3f' %
+    ...       tuple(transform.convert(onsala_etrf2000, from_frame = 'ETRF2000', to_frame = 'ITRF2008', epoch = 2005.0)))
+    3370658.542, 711877.138, 5349786.952
     
     
     '''
