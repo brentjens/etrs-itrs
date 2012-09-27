@@ -3,7 +3,7 @@
 from distutils.core import setup
 import etrsitrs
 
-setup(name='etrsitrs',
+setup(name='etrs-itrs',
       version=etrsitrs.__version__,
       description='A python tool to convert ETRS to ITRF coordinates',
       author='Michiel Brentjens',

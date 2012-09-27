@@ -1,8 +1,25 @@
 API documentation
 =================
 
-``etrsitrs.etrsitrs``
+``etrsitrs.``
+-------------
+
+.. automodule:: etrsitrs
+   :members:
+
+Main
+----
+.. automodule:: etrsitrs.main
+   :members:
+
+Parameter sets
+--------------
+
+.. automodule:: etrsitrs.parameterset
+   :members:
+
+Datum transformations
 ---------------------
 
-.. automodule:: etrsitrs.etrsitrs
+.. automodule:: etrsitrs.datumtransformation
    :members:

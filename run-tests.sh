@@ -1,8 +1,14 @@
 #!/bin/bash
 
-cd doc && make html && make latexpdf && cd ..
+PYTHONPATH="`pwd`/:`pwd`/doc/:$PYTHONPATH"
+echo ""
+echo "PYTHONPATH=$PYTHONPATH"
+echo ""
 
-PYTHONPATH="`pwd`:`pwd`/modules/:$PYTHONPATH"
+pushd doc && make html && make latexpdf
+popd
+
+
 NOSETESTS=`which nosetests`
 PYLINT=`which pylint`
 
@@ -25,5 +31,5 @@ else
 fi
 
 if [[ -f "$PYLINT" ]] ; then
-    $PYLINT --report=n --include-ids=y etrsitrs
+    $PYLINT --report=n --include-ids=y ./etrsitrs
 fi
