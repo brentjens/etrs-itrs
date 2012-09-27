@@ -4,6 +4,7 @@ cd doc && make html && make latexpdf && cd ..
 
 PYTHONPATH="`pwd`:`pwd`/modules/:$PYTHONPATH"
 NOSETESTS=`which nosetests`
+PYLINT=`which pylint`
 
 if [[ ! -f "$NOSETESTS" ]] ; then
     NOSETESTS=`which nosetests2`
@@ -21,4 +22,8 @@ else
               --cover-html-dir=coverage \
               --cover-erase \
               -x $@
+fi
+
+if [[ -f "$PYLINT" ]] ; then
+    $PYLINT --report=n --include-ids=y etrsitrs
 fi
