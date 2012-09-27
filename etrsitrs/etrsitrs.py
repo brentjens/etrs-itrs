@@ -66,6 +66,8 @@ coordinates are observed or required. Both are in units of years.
 
 from numpy import array, dot, pi
 
+__version__ = '0.1'
+
 
 class ParameterSet(object):
     r'''
@@ -147,8 +149,8 @@ class ParameterSet(object):
 
 
     def __repr__(self):
-        return ('ParameterSet(translate_m = %r, term_d = %.4e, rotate_rad = %r)' %
-                (self.translate_m, self.term_d, self.rotate_rad))
+        return ('ParameterSet(translate_m = %r, term_d = %.4e, rotate_rad = %r)'
+                % (self.translate_m, self.term_d, self.rotate_rad))
 
 
     def matrix(self):
@@ -411,8 +413,13 @@ class DatumTransformation(object):
     >>> print('%.3f, %.3f, %.3f' %
     ...       tuple(transform.convert(onsala_etrf2000, from_frame = 'ETRF2000', to_frame = 'ITRF2008', epoch = 2005.0)))
     3370658.542, 711877.138, 5349786.952
+
+    But be careful:
     
-    
+    >>> transform.convert(onsala_etrf2000, from_frame = 'ETRF2000', to_frame = 'ITRF2005', epoch = 2005.0)
+    Traceback (most recent call last):
+    ...
+    ValueError: No transform 'ETRF2000' -> 'ITRF2005' only 'ETRF2000' <-> 'ITRF2008'.
     '''
     def __init__(self, from_frame, to_frame, parameters, rates, ref_epoch):
         self.from_frame = from_frame
@@ -489,7 +496,9 @@ class DatumTransformation(object):
         elif from_frame == self.to_frame and to_frame == self.from_frame:
             transform = reverse_transform
         else:
-            raise ValueError('Cannot transform %r to %r' % (from_frame, to_frame))
+            raise ValueError('No transform %r -> %r only %r <-> %r.' %
+                             (from_frame, to_frame,
+                              self.to_frame, self.from_frame))
         def convert(xyz_m):
             r'''
             Convert *xyz_m* to anorther datum.
@@ -545,9 +554,61 @@ class DatumTransformation(object):
 
 
 class ETRF2000(DatumTransformation):
-    def __init__(self, from_frame, parameters, rates, epoch):
-        self.to_frame   = 'ETRF2000'
-        self.from_frame = from_frame
+    r'''
+    ETRF2000 is a subclass of *DatumTransformation* that makes it
+    possible to specify the 14 parameters from Boucher and Altamimi
+    (2011) in the units used in their memo. That is, first the three
+    translations in mm, then term D in units of :math:`10^{-9}`
+    followed by the three rotations in mas. The *to_frame* is set to
+    'ETRF2000'.
+
+    The same order and units are used for the rates.
+
+    **Parameters**
+    
+    from_frame : string
+        The frame from which the parameters transform,
+        e.g. 'ITRF2008'.
+
+    parameters : sequence of 7 floats
+        The parameters [T1 (mm), T2 (mm), T3 (mm), D (1e-9), R1 (mas),
+        R2 (mas), R3 (mas)].
+
+    rates: sequence of 7 floats
+        The annual rates of change for the parameters [T1 (mm), T2
+        (mm), T3 (mm), D (1e-9), R1 (mas), R2 (mas), R3 (mas)].
+
+    ref_epoch : float
+        The reference epoch at which *parameters* are valid,
+        e.g. 2000.0
+
+    **Examples**
+    
+    >>> #       |'T1' |'T2' |'T3'  |'D'  |'R1'  |'R2'  |'R3'   |
+    >>> #       |(mm) |(mm) |(mm)  |x1e-9|(mas) |(mas) |(mas)  | 
+    >>> ETRF2000('ITRF2008' ,
+    ...          [52.1, 49.3, -58.5, 1.34, 0.891, 5.390, -8.712],
+    ...          [ 0.1,  0.1,  -1.8, 0.08, 0.081, 0.490, -0.792],
+    ...          2000.0)
+    ETRF2000(from_frame = 'ITRF2008', to_frame = 'ETRF2000',
+            parameters = ParameterSet(translate_m = array([ 0.0521,  0.0493, -0.0585]), term_d = 1.3400e-09, rotate_rad = array([  4.31968990e-09,   2.61314574e-08,  -4.22369679e-08])),
+            rates      = ParameterSet(translate_m = array([ 0.0001,  0.0001, -0.0018]), term_d = 8.0000e-11, rotate_rad = array([  3.92699082e-10,   2.37558704e-09,  -3.83972435e-09])),
+            ref_epoch  = 2000.0)
+   
+    '''
+    def __init__(self, from_frame, parameters, rates, ref_epoch):
+        mm  = 0.001
+        mas = pi / (180.0 * 3600.0 * 1000.0)
+        super(ETRF2000, self).__init__(
+            from_frame = from_frame, to_frame = 'ETRF2000',
+            parameters = ParameterSet(array(parameters[0:3])*mm,
+                                      parameters[3]*1e-9, 
+                                      array(parameters[4:])*mas),
+            rates      = ParameterSet(array(rates[0:3])*mm,
+                                      rates[3]*1e-9, 
+                                      array(rates[4:])*mas),
+            ref_epoch  = ref_epoch)
+        
 
 
 

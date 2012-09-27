@@ -1,0 +1,5 @@
+include INSTALL
+include README
+include MANIFEST
+include run-tests.sh
+recursive-include doc *
