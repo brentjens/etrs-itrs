@@ -11,5 +11,5 @@ setup(name='etrs-itrs',
       url='',
       packages=['etrsitrs'],
       scripts=[],
-      requires=['numpy', 'nose', 'coverage', 'IPython(>=0.11)', 'numpydoc', 'sphinx'],
+      requires=['numpy', 'nose', 'coverage', 'numpydoc', 'sphinx'],
      )

@@ -31,5 +31,5 @@ else
 fi
 
 if [[ -f "$PYLINT" ]] ; then
-    $PYLINT --report=n --include-ids=y ./etrsitrs
+    $PYLINT --report=n --include-ids=y --variable-rgx='[a-z_][a-z0-9_]{1,30}$'  --disable=R0801,W0403 ./etrsitrs
 fi

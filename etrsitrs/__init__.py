@@ -62,18 +62,28 @@ where :math:`t_0` is the epoch at which the parameters are valid
 coordinates are observed or required. Both are in units of years.
 
 
-Sub modules
------------
+Available sub modules
+---------------------
 
-  - *parameterset*
-  - *datumtransformation*
-  - *main*
+parameterset
+    Organises the seven parameters necessary for the transforms.
+
+datumtransformation
+    The actual forward- and reverse transform math, and handling of
+    annual change of the parameters.
+
+main
+    Contains the *convert_fn()* and *convert()* functions, as well as
+    a table of predefined transforms *TRANSFORM_TABLE*, for supporting
+    these functions.
 
 '''
 
-
 __version__ = '0.1'
 
-from main import convert, convert_fn
+try:
+    from etrsitrs.main import convert, convert_fn
+except ImportError:
+    from main import convert, convert_fn
 
-__all__ = ['main']
+

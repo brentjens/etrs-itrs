@@ -1,5 +1,17 @@
+r'''
+The *datumtransformation* module contains the actual transform math,
+implemented in the *forward_transform()* and *reverse_transform()*
+functions, as well as the *DatumTransformation* class, which manages
+rates of change of parameters and wraps the forward- and reverse-
+transforms.
+'''
+
 from numpy import dot
-from etrsitrs.parameterset import ParameterSet
+
+try:
+    from etrsitrs.parameterset import ParameterSet
+except ImportError:
+    from parameterset import ParameterSet
 
 
 def forward_transform(xyz_m, translate_m, rotation_matrix):
@@ -327,7 +339,8 @@ class DatumTransformation(object):
         
 
     def convert(self, xyz_m, from_frame, to_frame, epoch):
-        r''' Converts the *xyz_m* vector from *from_frame* to
+        r'''
+        Converts the *xyz_m* vector from *from_frame* to
         *to_frame*. If *from_frame* is equal to *self.to_frame* and
         v.v., the function performs the inverse transform. Use only if
         one has to convert one or two coordinates. Create a conversion
@@ -335,6 +348,9 @@ class DatumTransformation(object):
         to convert a large number of coordinates.
 
         **Parameters**
+        
+        xyz_m : sequence of 3 floats
+            The coordinates to convert.
 
         from_frame : string
             Frame from which to ransform, e.g. 'ITRF2008'.
