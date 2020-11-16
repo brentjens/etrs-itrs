@@ -164,9 +164,18 @@ class ETRF2000(DatumTransformation):
 # Coefficients from Boucher and Altamimi (2011)
 # "Memo: specifications for reference frame fixing in the analysis of
 # a EUREF GPS campaign"
+# http://etrs89.ensg.ign.fr/memo-V7.pdf
+# ITRF 2014 coefficients from Altamini (2018)
+# "EUREF Technical Note 1: Relationship and Transformation between
+# the International and the European Terrestrial Reference Systems"
+# http://etrs89.ensg.ign.fr/pub/EUREF-TN-1.pdf
 #                          |'T1' |'T2' |'T3'  |'D'   |'R1'  |'R2'  |'R3'   |
 #                          |(mm) |(mm) |(mm)  |x 1e-9|(mas) |(mas) |(mas)  |
-TRANSFORM_TABLE = [        
+TRANSFORM_TABLE = [
+                   ETRF2000('ITRF2014',
+                            [54.7, 52.2, -74.1,  2.12, 1.701,10.290,-16.632],
+                            [ 0.1,  0.1,  -1.9,  0.11, 0.081, 0.490, -0.792],
+                            2010.0),
                    ETRF2000('ITRF2008' ,
                             [52.1, 49.3, -58.5,  1.34, 0.891, 5.390, -8.712],
                             [ 0.1,  0.1,  -1.8,  0.08, 0.081, 0.490, -0.792],
