@@ -81,7 +81,7 @@ main
 
 import importlib.metadata
 
-__version__ = importlib.metadata.version('etrs-itrs')
+__version__ = importlib.metadata.version('etrsitrs')
 
 try:
     from etrsitrs.main import convert, convert_fn
