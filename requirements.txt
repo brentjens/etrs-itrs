@@ -1,0 +1,5 @@
+numpy
+nose
+coverage
+numpydoc
+sphinx

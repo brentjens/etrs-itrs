@@ -79,11 +79,11 @@ main
 
 '''
 
-__version__ = '0.1'
+import importlib.metadata
+
+__version__ = importlib.metadata.version('etrs-itrs')
 
 try:
     from etrsitrs.main import convert, convert_fn
 except ImportError:
     from main import convert, convert_fn
-
-

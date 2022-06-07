@@ -1,5 +1,6 @@
 include INSTALL
 include README
+include VERSION
 include MANIFEST
 include run-tests.sh
 recursive-include doc *
